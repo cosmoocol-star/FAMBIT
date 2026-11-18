@@ -1,0 +1,991 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Contorno de Ojitos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Source+Sans+3:wght@400;600;700&display=swap">
+<style>
+/* Layout: igual al Cosmo Generador — cabecera cósmica flotante, panel de controles a la izquierda y vista previa a la derecha */
+:root{
+  --bg1:#F1EAF9; --bg2:#EAE1F5; --surface:#FFFFFF; --surface2:#F4EFFA; --line:#E7DDF4; --line2:#D8CBEA;
+  --ink:#33204A; --muted:#7D6C97; --label-ink:#8A77A8;
+  --deep:#22082B; --deep2:#3A1148; --lav:#8B5CF6; --lav2:#6D28D9; --pink:#F27BB4; --menta:#2FB9A9;
+  --mat:#EDE6F6; --mat-grid:#E2D7F0; --cut:#e0007a; --label:#e3001b; --off:#A595BD; --focus:rgba(139,92,246,.55);
+  --f-display:"Lilita One", "Arial Rounded MT Bold", "Trebuchet MS", sans-serif;
+  --f-ui:"Source Sans 3", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg1:#170613; --bg2:#1d0a22; --surface:#2a1340; --surface2:#341a4c; --line:#432a5e; --line2:#553a72;
+  --ink:#F1E9FB; --muted:#BBA8D6; --label-ink:#A893C6;
+  --mat:#220e30; --mat-grid:#2e1840; --cut:#ff3ba0; --label:#ff4d4d; --off:#8b7aa3; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg1:#170613; --bg2:#1d0a22; --surface:#2a1340; --surface2:#341a4c; --line:#432a5e; --line2:#553a72;
+  --ink:#F1E9FB; --muted:#BBA8D6; --label-ink:#A893C6;
+  --mat:#220e30; --mat-grid:#2e1840; --cut:#ff3ba0; --label:#ff4d4d; --off:#8b7aa3; color-scheme:dark }
+*{box-sizing:border-box}
+html{background:var(--bg1)}
+body{color:var(--ink);font-family:var(--f-ui);font-size:14px;line-height:1.45;min-height:100%;
+  background:
+    radial-gradient(1100px 500px at 85% -80px, rgba(139,92,246,.10), transparent 60%),
+    radial-gradient(900px 420px at 8% 0, rgba(242,123,180,.08), transparent 55%),
+    linear-gradient(165deg,var(--bg1) 0%,var(--bg2) 48%,var(--bg1) 100%)}
+.page{max-width:1200px;margin:0 auto;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:16px 48px}
+/* cabecera cósmica */
+.cosmo-header{display:flex;align-items:center;gap:14px;padding:16px 20px;margin-bottom:16px;border-radius:20px;color:#fff;
+  background:
+    radial-gradient(2px 2px at 12% 30%, rgba(255,255,255,.9), transparent 60%),
+    radial-gradient(1.6px 1.6px at 32% 74%, rgba(255,255,255,.55), transparent 60%),
+    radial-gradient(2.2px 2.2px at 58% 22%, rgba(255,255,255,.75), transparent 60%),
+    radial-gradient(1.4px 1.4px at 76% 66%, rgba(255,255,255,.5), transparent 60%),
+    radial-gradient(2px 2px at 92% 34%, rgba(255,255,255,.8), transparent 60%),
+    radial-gradient(1.2px 1.2px at 45% 48%, rgba(255,255,255,.45), transparent 60%),
+    linear-gradient(120deg,#1F0728 0%,#341040 55%,#4A1A56 100%);
+  box-shadow:0 10px 26px rgba(46,16,64,.25)}
+.cosmo-logo{height:62px;width:auto;flex-shrink:0;display:block;max-width:40%}
+.hdr-text{padding-left:14px;border-left:1px solid rgba(255,255,255,.18);min-width:0}
+h1{font-family:var(--f-display);font-size:22px;font-weight:400;letter-spacing:.6px;line-height:1.15;margin:0}
+.hdr-text .sub{font-size:12px;color:#CBB6E6;margin:3px 0 0;letter-spacing:.02em}
+/* área de trabajo */
+.app{display:grid;grid-template-columns:270px minmax(0,1fr);gap:14px;align-items:start}
+.col{display:flex;flex-direction:column;gap:12px;min-width:0}
+.side{position:sticky;top:calc(env(safe-area-inset-top, 0px) + 12px)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:0 4px 14px rgba(84,49,128,.07);padding:14px}
+.slabel{font-size:10.5px;font-weight:700;letter-spacing:.08em;color:var(--label-ink);margin:0 0 8px;text-transform:uppercase}
+.drop{display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;border:1.5px dashed var(--line2);border-radius:14px;padding:18px 10px;cursor:pointer;transition:border-color .15s,background .15s}
+.drop:hover,.drop.over{border-color:var(--lav);background:var(--surface2)}
+.drop:focus-within{outline:2px solid var(--focus);outline-offset:2px}
+.drop input{position:absolute;width:1px;height:1px;opacity:0}
+.drop .ico{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--lav),var(--lav2));color:#fff;display:grid;place-items:center}
+.big{font-weight:700;font-size:14px}
+.help{font-size:12px;color:var(--muted);margin:0}
+.legend{display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--muted);margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.legend span{display:flex;gap:8px;align-items:center}
+.legend i{width:20px;flex:none;border-top:2px solid var(--cut)}
+.legend i.lb{border-color:var(--label)}
+.legend i.x{border-top:2px dashed var(--off)}
+.topbox{display:flex;flex-direction:column;gap:10px}
+[hidden]{display:none!important}
+.topbox .lbl{font-family:var(--f-display);font-weight:400;font-size:17px;letter-spacing:.3px}
+.topbox .acts{flex-direction:column}
+.topbox .acts button{width:100%}
+.pills{display:flex;gap:5px;flex-wrap:wrap}
+.pill{display:inline-flex;font-size:11px;padding:2px 9px;border-radius:999px;background:var(--surface2);border:1px solid var(--line);color:var(--muted);font-variant-numeric:tabular-nums}
+.meta{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;margin-top:2px}
+.acts{display:flex;gap:6px;flex-wrap:wrap}
+button{font:inherit;font-weight:700;font-size:13px;border-radius:999px;padding:9px 16px;cursor:pointer;border:1.5px solid var(--line2);background:var(--surface);color:var(--ink);transition:all .15s}
+button:hover:not(:disabled){border-color:var(--lav);color:var(--lav2)}
+button.primary{background:linear-gradient(135deg,var(--lav),var(--lav2));border-color:transparent;color:#fff}
+button.primary:hover:not(:disabled){background:linear-gradient(135deg,#7C4DEB,#5B21B6);color:#fff}
+button.cta{background:linear-gradient(135deg,var(--lav) 0%,#B84FD0 55%,#E14A9F 100%);border-color:transparent;color:#fff}
+button.cta:hover:not(:disabled){background:linear-gradient(135deg,#7C4DEB 0%,#A63FBF 55%,#D13A90 100%);color:#fff}
+button:disabled{opacity:.4;cursor:not-allowed}
+button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+/* vista previa */
+.empty{border:1.5px dashed var(--line2);border-radius:14px;padding:48px 16px;text-align:center;color:var(--muted)}
+.empty b{display:block;font-family:var(--f-display);font-weight:400;font-size:18px;color:var(--ink);margin-bottom:4px;letter-spacing:.3px}
+.jobs{display:flex;flex-direction:column;gap:14px}
+.job{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--surface)}
+.bar{display:flex;gap:10px 14px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:12px 14px;border-bottom:1px solid var(--line)}
+.fname{font-weight:700;word-break:break-all;min-width:0}
+.sheet{margin:0;background:var(--mat);background-image:linear-gradient(var(--mat-grid) 1px,transparent 1px),linear-gradient(90deg,var(--mat-grid) 1px,transparent 1px);background-size:20px 20px;padding:18px;display:flex;justify-content:center}
+.sheet svg{display:block;width:100%;max-width:620px;height:auto;background:#fff;border-radius:6px;box-shadow:0 2px 10px rgba(46,16,64,.16)}
+.pc{fill:transparent;stroke:var(--cut);stroke-width:1.3;vector-effect:non-scaling-stroke;cursor:pointer;pointer-events:all}
+.pc.lb{stroke:var(--label)}
+.pc:hover{stroke-width:2.6}
+.pc.x{stroke:var(--off);stroke-dasharray:4 3}
+.status{font-size:13px;color:var(--muted);padding:10px 14px;border-bottom:1px solid var(--line)}
+.status+.status{display:none}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom, 0px) + 18px);background:linear-gradient(120deg,#1F0728,#4A1A56);color:#fff;padding:11px 18px;border-radius:999px;font-size:13px;font-weight:700;max-width:calc(100% - 32px);box-shadow:0 8px 22px rgba(46,16,64,.35)}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:#D3C3EA;border-radius:999px;border:2px solid transparent;background-clip:content-box}
+@media (max-width:760px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .side{position:static}
+  .cosmo-header{padding:12px 14px;border-radius:16px}
+  h1{font-size:18px}
+  .cosmo-logo{height:46px}
+  .hdr-text{padding-left:10px}
+  .sheet{padding:10px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<style>html,body{margin:0}img{max-width:100%}</style>
+</head>
+<body>
+<div class="page">
+<header class="cosmo-header">
+  <img class="cosmo-logo" alt="Ojitos Cosmo · Hub Cósmico" src="data:image/png;base64,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">
+  <div class="hdr-text">
+    <h1>Contorno de Ojitos</h1>
+    <p class="sub">Líneas de corte listas para AnyCut</p>
+  </div>
+</header>
+<main class="app">
+  <div class="col side">
+    <section class="card">
+      <p class="slabel">Archivos</p>
+      <label class="drop" id="drop">
+        <span class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 16V5M6.5 10.5 12 5l5.5 5.5M5 19h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span class="big">Subir PDFs</span>
+        <span class="help">Toca o arrastra uno o varios archivos</span>
+        <input type="file" id="file" accept="application/pdf,.pdf" multiple>
+      </label>
+    </section>
+    <section class="card topbox" id="top" hidden></section>
+    <section class="card">
+      <p class="slabel">Línea de corte</p>
+      <p class="help">A 0.1 mm del borde de cada pieza, suavizada para el plotter.</p>
+      <div class="legend" aria-label="Leyenda de la vista previa">
+        <span><i></i>Ojito · corte magenta</span>
+        <span><i class="lb"></i>Etiqueta · corte rojo</span>
+        <span><i class="lb"></i>Texto sin marco · se le crea su etiqueta</span>
+        <span><i class="x"></i>Excluido · toca una línea para quitarla o incluirla</span>
+      </div>
+    </section>
+  </div>
+  <section class="card">
+    <p class="slabel">Vista previa</p>
+    <div class="empty" id="empty"><b>Sin hojas todavía</b>Sube los PDFs del Generador y presiona Generar contorno. Aquí verás cada hoja con sus líneas de corte.</div>
+    <div id="jobs" class="jobs"></div>
+  </section>
+</main>
+</div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+"use strict";
+const OFFSET_MM = 0.1;      // distancia fija del corte al borde del ojito
+const DPI = 400;            // resolución de análisis
+const SMOOTH_MM = 0.25;      // suavizado del trazo (quita el ruido de píxel)
+const FIT_MIN_MM = 0.03, FIT_MAX_MM = 0.06;   // error máximo del ajuste de curvas, según el tamaño de la pieza
+const CORNER_DEG = 35;      // giro mínimo para conservar una esquina como nodo
+const CLOSE_MM = 0.15;       // cierre de trazos finos cortados
+const THIN_MM = 0.2;        // grosor (medio) mínimo: más delgado es letra, línea o contorno vacío
+const ROUND_MM = 2;         // radio de las esquinas redondeadas en etiquetas
+const MIN_MM = 1.5;         // lado mínimo para considerar un ojito
+const SMALL_MM = 6;         // por debajo de esto se exige pupila oscura (para no tomar letras)
+const SMALL_STROKE_MM = 0.6; // en piezas chicas, grosor (medio) que ya no puede ser letra (las letras sueltas llegan a TEXT_STROKE_MM)
+const MAX_MM = 60;          // más grande que esto es marco de hoja
+const LABEL_MIN_MM = 3, LABEL_MAX_MM = 16, LABEL_LEN_MM = 130;   // alto y largo que puede tener una etiqueta con marco
+const GAP_MM = 2;           // abertura máxima que se cierra en el marco de una etiqueta tapado en parte
+const TEXT_MAX_MM = 8;     // tamaño máximo de una letra suelta
+const TEXT_STROKE_MM = 0.5; // medio grosor máximo del trazo de una letra
+const TEXT_GAP_MM = 1.6;    // separación máxima entre letras de un mismo bloque de texto
+const TEXT_LINE_MM = 80;    // separación máxima entre textos de una misma línea (Ref. … nombre … pares)
+const TEXT_PAD_MM = 1.5;    // margen de la etiqueta que se crea alrededor de un texto sin marco
+const DOT_RGB = [79, 174, 50], DOT_MIN_MM = 0.7, DOT_MAX_MM = 1.7;   // punto verde de la plantilla: no se corta
+const PT_PER_MM = 72 / 25.4;
+const $ = id => document.getElementById(id);
+const isIOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+const downloadsP = (window.claude && typeof window.claude.use === "function") ? window.claude.use("downloads").catch(() => null) : Promise.resolve(null);
+const tick = () => new Promise(r => setTimeout(r, 0));
+function toast(m) { const t = $("toast"); t.textContent = m; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => t.hidden = true, 3200); }
+
+// ---------- geometría ----------
+function dt1d(f, n, d, v, z) {
+  let k = 0; v[0] = 0; z[0] = -Infinity; z[1] = Infinity;
+  for (let q = 1; q < n; q++) {
+    let s = ((f[q] + q * q) - (f[v[k]] + v[k] * v[k])) / (2 * q - 2 * v[k]);
+    while (s <= z[k]) { k--; s = ((f[q] + q * q) - (f[v[k]] + v[k] * v[k])) / (2 * q - 2 * v[k]); }
+    k++; v[k] = q; z[k] = s; z[k + 1] = Infinity;
+  }
+  k = 0;
+  for (let q = 0; q < n; q++) { while (z[k + 1] < q) k++; const dq = q - v[k]; d[q] = dq * dq + f[v[k]]; }
+}
+function edt(mask, w, h, target) {
+  const n = w * h, g = new Float32Array(n);
+  for (let i = 0; i < n; i++) g[i] = mask[i] === target ? 0 : 1e20;
+  const N = Math.max(w, h), f = new Float64Array(N), d = new Float64Array(N), v = new Int32Array(N), z = new Float64Array(N + 1);
+  for (let x = 0; x < w; x++) { for (let y = 0; y < h; y++) f[y] = g[y * w + x]; dt1d(f, h, d, v, z); for (let y = 0; y < h; y++) g[y * w + x] = d[y]; }
+  for (let y = 0; y < h; y++) { const o = y * w; for (let x = 0; x < w; x++) f[x] = g[o + x]; dt1d(f, w, d, v, z); for (let x = 0; x < w; x++) g[o + x] = Math.sqrt(d[x]); }
+  return g;
+}
+function ringArea(r) { let a = 0; for (let i = 0, j = r.length - 1; i < r.length; j = i++) a += (r[j][0] + r[i][0]) * (r[j][1] - r[i][1]); return Math.abs(a / 2); }
+function inRing(x, y, r) {
+  let c = false;
+  for (let i = 0, j = r.length - 1; i < r.length; j = i++) {
+    const xi = r[i][0], yi = r[i][1], xj = r[j][0], yj = r[j][1];
+    if (((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi)) c = !c;
+  }
+  return c;
+}
+function rdp(pts, tol) {
+  if (pts.length < 4) return pts;
+  const keep = new Uint8Array(pts.length); keep[0] = keep[pts.length - 1] = 1;
+  const st = [[0, pts.length - 1]], t2 = tol * tol;
+  while (st.length) {
+    const [a, b] = st.pop(), ax = pts[a][0], ay = pts[a][1], dx = pts[b][0] - ax, dy = pts[b][1] - ay, L = dx * dx + dy * dy;
+    let best = -1, bi = -1;
+    for (let i = a + 1; i < b; i++) {
+      const px = pts[i][0], py = pts[i][1];
+      const dd = L === 0 ? (px - ax) ** 2 + (py - ay) ** 2 : (dx * (py - ay) - dy * (px - ax)) ** 2 / L;
+      if (dd > best) { best = dd; bi = i; }
+    }
+    if (best > t2) { keep[bi] = 1; st.push([a, bi], [bi, b]); }
+  }
+  return pts.filter((_, i) => keep[i]);
+}
+// componentes conectados (8 vecinos)
+function label(mask, w, h, color) {
+  const lab = new Int32Array(w * h), par = [0];
+  const find = a => { while (par[a] !== a) { par[a] = par[par[a]]; a = par[a]; } return a; };
+  const uni = (a, b) => { a = find(a); b = find(b); if (a !== b) { if (a < b) par[b] = a; else par[a] = b; } };
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const i = y * w + x; if (!mask[i]) continue;
+    let m = 0;
+    const nb = [x > 0 ? lab[i - 1] : 0, y > 0 ? lab[i - w] : 0, (x > 0 && y > 0) ? lab[i - w - 1] : 0, (x < w - 1 && y > 0) ? lab[i - w + 1] : 0];
+    for (const l of nb) if (l) { if (!m) m = l; else uni(m, l); }
+    if (!m) { m = par.length; par.push(m); }
+    lab[i] = m;
+  }
+  const remap = new Int32Array(par.length); let n = 0;
+  for (let l = 1; l < par.length; l++) { const r = find(l); if (!remap[r]) remap[r] = ++n; remap[l] = remap[r]; }
+  const comps = Array.from({ length: n + 1 }, (_, id) => ({ id, cnt: 0, nw: 0, dk: 0, x0: 1e9, y0: 1e9, x1: -1, y1: -1, px: 0, py: 0 }));
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const i = y * w + x; if (!lab[i]) continue;
+    const c = comps[lab[i] = remap[lab[i]]];
+    if (!c.cnt) { c.px = x + 0.5; c.py = y + 0.5; }
+    c.cnt++; if (color[i]) c.nw++; if (color[i] === 2) c.dk++; if (x < c.x0) c.x0 = x; if (x > c.x1) c.x1 = x; if (y < c.y0) c.y0 = y; if (y > c.y1) c.y1 = y;
+  }
+  comps.shift();
+  return { lab, comps };
+}
+// contorno de una máscara local (W×H, con origen X0,Y0 en la página) a una distancia offPx.
+// roundPx: redondea las esquinas convexas con ese radio. Devuelve también samp(x,y): la distancia
+// con signo a la pieza (px, positiva adentro) en coordenadas de página, para vigilar que el corte no la pise.
+function ringFromMask(m, W, H, X0, Y0, offPx, roundPx) {
+  const field = mm => { const dOut = edt(mm, W, H, 1), dIn = edt(mm, W, H, 0); let mx = 0;
+    for (let i = 0; i < dOut.length; i++) { if (mm[i] && dIn[i] > mx) mx = dIn[i]; dOut[i] = mm[i] ? dIn[i] - 0.5 : 0.5 - dOut[i]; }
+    return { f: dOut, maxIn: mx }; };
+  let { f, maxIn } = field(m);
+  if (roundPx > 0) {   // apertura: se encoge roundPx y se vuelve a crecer -> esquinas redondas
+    const er = new Uint8Array(W * H); let any = 0;
+    for (let i = 0; i < er.length; i++) if (f[i] > roundPx) { er[i] = 1; any = 1; }
+    if (any) { const g = field(er).f; for (let i = 0; i < g.length; i++) g[i] += roundPx; f = g; }
+  }
+  const mp = d3.contours().size([W, H]).smooth(true).contour(f, -offPx);
+  let best = null, ba = 0;
+  for (const poly of mp.coordinates) { const a = ringArea(poly[0]); if (a > ba) { ba = a; best = poly[0]; } }
+  if (!best) return null;
+  const samp = (x, y) => {
+    let gx = x - X0 - 0.5, gy = y - Y0 - 0.5;
+    gx = gx < 0 ? 0 : gx > W - 1.001 ? W - 1.001 : gx; gy = gy < 0 ? 0 : gy > H - 1.001 ? H - 1.001 : gy;
+    const ix = gx | 0, iy = gy | 0, fx = gx - ix, fy = gy - iy, o = iy * W + ix;
+    return (f[o] * (1 - fx) + f[o + 1] * fx) * (1 - fy) + (f[o + W] * (1 - fx) + f[o + W + 1] * fx) * fy;
+  };
+  return { ring: best.map(([x, y]) => [x + X0, y + Y0]), area: ba, maxIn, samp, f };
+}
+// contorno exterior de un componente con un offset (px), en coordenadas de página (px)
+// opts.fill: rellena los huecos; opts.roundPx: redondea las esquinas convexas con ese radio
+function outerRing(lab, w, id, c, offPx, opts) {
+  opts = opts || {};
+  const roundPx = opts.roundPx || 0, pad = Math.ceil(offPx + roundPx) + 8;
+  const X0 = c.x0 - pad, Y0 = c.y0 - pad, W = c.x1 - c.x0 + 1 + 2 * pad, H = c.y1 - c.y0 + 1 + 2 * pad;
+  const m = new Uint8Array(W * H), hPage = lab.length / w;
+  for (let y = 0; y < H; y++) { const py = Y0 + y; if (py < 0 || py >= hPage) continue;
+    for (let x = 0; x < W; x++) { const px = X0 + x; if (px >= 0 && px < w && lab[py * w + px] === id) m[y * W + x] = 1; } }
+  if (opts.fill) fillHoles(m, W, H);
+  return ringFromMask(m, W, H, X0, Y0, offPx, roundPx);
+}
+// componentes del fondo (4 vecinos): cada zona en blanco encerrada por tinta
+function labelBg(mask, w, h) {
+  const lab = new Int32Array(w * h), par = [0];
+  const find = a => { while (par[a] !== a) { par[a] = par[par[a]]; a = par[a]; } return a; };
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const i = y * w + x; if (mask[i]) continue;
+    const a = x > 0 ? lab[i - 1] : 0, b = y > 0 ? lab[i - w] : 0;
+    let m = a || b;
+    if (a && b && a !== b) { const ra = find(a), rb = find(b); if (ra !== rb) { if (ra < rb) par[rb] = ra; else par[ra] = rb; } }
+    if (!m) { m = par.length; par.push(m); }
+    lab[i] = m;
+  }
+  const remap = new Int32Array(par.length); let n = 0;
+  for (let l = 1; l < par.length; l++) { const r = find(l); if (!remap[r]) remap[r] = ++n; remap[l] = remap[r]; }
+  const comps = Array.from({ length: n + 1 }, (_, id) => ({ id, cnt: 0, x0: 1e9, y0: 1e9, x1: -1, y1: -1, px: 0, py: 0 }));
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const i = y * w + x; if (!lab[i]) continue;
+    const c = comps[lab[i] = remap[lab[i]]];
+    if (!c.cnt) { c.px = x; c.py = y; }
+    c.cnt++; if (x < c.x0) c.x0 = x; if (x > c.x1) c.x1 = x; if (y < c.y0) c.y0 = y; if (y > c.y1) c.y1 = y;
+  }
+  comps.shift();
+  return { lab, comps };
+}
+// rectángulo de esquinas redondeadas como curvas Bézier (para la etiqueta de un texto sin marco)
+function roundRectSegs(x0, y0, x1, y1, r) {
+  const k = 0.5522847498 * r, out = [];
+  const line = (a, b) => { if (Math.hypot(b[0] - a[0], b[1] - a[1]) > 1e-6) out.push([a, [a[0] + (b[0] - a[0]) / 3, a[1] + (b[1] - a[1]) / 3], [a[0] + (b[0] - a[0]) * 2 / 3, a[1] + (b[1] - a[1]) * 2 / 3], b]); };
+  line([x0 + r, y0], [x1 - r, y0]); out.push([[x1 - r, y0], [x1 - r + k, y0], [x1, y0 + r - k], [x1, y0 + r]]);
+  line([x1, y0 + r], [x1, y1 - r]); out.push([[x1, y1 - r], [x1, y1 - r + k], [x1 - r + k, y1], [x1 - r, y1]]);
+  line([x1 - r, y1], [x0 + r, y1]); out.push([[x0 + r, y1], [x0 + r - k, y1], [x0, y1 - r + k], [x0, y1 - r]]);
+  line([x0, y1 - r], [x0, y0 + r]); out.push([[x0, y0 + r], [x0, y0 + r - k], [x0 + r - k, y0], [x0 + r, y0]]);
+  return out;
+}
+// grosor de un componente: radio del mayor círculo que cabe en su tinta.
+// fill=false mide la tinta original (letras finas); fill=true rellena huecos (botones con lunares)
+function compMaxIn(lab, raw, w, id, c, fill) {
+  const W = c.x1 - c.x0 + 3, H = c.y1 - c.y0 + 3, m = new Uint8Array(W * H);
+  for (let y = 0; y < H - 2; y++) for (let x = 0; x < W - 2; x++) { const i = (c.y0 + y) * w + c.x0 + x; if (lab[i] === id && (fill || raw[i])) m[(y + 1) * W + x + 1] = 1; }
+  if (fill) fillHoles(m, W, H);
+  const d = edt(m, W, H, 0); let mx = 0; for (let i = 0; i < d.length; i++) if (m[i] && d[i] > mx) mx = d[i];
+  return mx;
+}
+// rellena los huecos internos de una máscara (todo lo que no se alcanza desde el borde)
+function fillHoles(m, W, H) {
+  const seen = new Uint8Array(W * H), st = [];
+  const push = i => { if (!m[i] && !seen[i]) { seen[i] = 1; st.push(i); } };
+  for (let x = 0; x < W; x++) { push(x); push((H - 1) * W + x); }
+  for (let y = 0; y < H; y++) { push(y * W); push(y * W + W - 1); }
+  while (st.length) { const i = st.pop(), x = i % W, y = (i / W) | 0;
+    if (x > 0) push(i - 1); if (x < W - 1) push(i + 1); if (y > 0) push(i - W); if (y < H - 1) push(i + W); }
+  for (let i = 0; i < m.length; i++) if (!m[i] && !seen[i]) m[i] = 1;
+}
+
+// reemplaza una máscara por su envolvente convexa (rellena)
+function convexFill(m, W, H) {
+  const pts = [];
+  for (let y = 0; y < H; y++) { let a = -1, b = -1; for (let x = 0; x < W; x++) if (m[y * W + x]) { if (a < 0) a = x; b = x; }
+    if (a >= 0) { pts.push([a, y], [b + 1, y], [a, y + 1], [b + 1, y + 1]); } }
+  if (pts.length < 3) return;
+  pts.sort((p, q) => p[0] - q[0] || p[1] - q[1]);
+  const cr = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+  const lo = [], up = [];
+  for (const p of pts) { while (lo.length >= 2 && cr(lo[lo.length - 2], lo[lo.length - 1], p) <= 0) lo.pop(); lo.push(p); }
+  for (let i = pts.length - 1; i >= 0; i--) { const p = pts[i]; while (up.length >= 2 && cr(up[up.length - 2], up[up.length - 1], p) <= 0) up.pop(); up.push(p); }
+  const hull = lo.slice(0, -1).concat(up.slice(0, -1));
+  for (let y = 0; y < H; y++) {
+    const yc = y + 0.5; let a = Infinity, b = -Infinity;
+    for (let i = 0, j = hull.length - 1; i < hull.length; j = i++) {
+      const [xi, yi] = hull[i], [xj, yj] = hull[j];
+      if ((yi > yc) !== (yj > yc)) { const x = xi + (yc - yi) * (xj - xi) / (yj - yi); if (x < a) a = x; if (x > b) b = x; }
+    }
+    for (let x = 0; x < W; x++) m[y * W + x] = (x + 0.5 >= a && x + 0.5 <= b) ? 1 : 0;
+  }
+}
+// remuestreo uniforme de un anillo cerrado
+function resample(r, step) {
+  const n = r.length, seg = new Float64Array(n); let L = 0;
+  for (let i = 0; i < n; i++) { const a = r[i], b = r[(i + 1) % n]; seg[i] = Math.hypot(b[0] - a[0], b[1] - a[1]); L += seg[i]; }
+  const m = Math.max(12, Math.round(L / step)), st = L / m, out = [];
+  let i = 0, acc = 0;
+  for (let k = 0; k < m; k++) {
+    const t = k * st;
+    while (acc + seg[i] < t && i < n - 1) { acc += seg[i]; i++; }
+    const a = r[i], b = r[(i + 1) % n], u = seg[i] ? (t - acc) / seg[i] : 0;
+    out.push([a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u]);
+  }
+  return out;
+}
+// suavizado gaussiano circular; devuelve el anillo denso (cada ~0.1 mm) listo para ajustar curvas.
+// Suavizar recorta las esquinas y las curvas cerradas, y con el corte a 0.1 mm eso mete la cuchilla
+// dentro del ojito. Por eso, después de suavizar, se mide la distancia real a la pieza (samp) y los
+// tramos que quedaron a menos de needPx (3/4 de la distancia de corte) se empujan hacia afuera, también de forma suave.
+function smoothRing(r, pxPerMm, samp, needPx) {
+  const p = resample(r, 0.5), n = p.length, sig = SMOOTH_MM * pxPerMm / 0.5;
+  const kern = s => { const R = Math.max(1, Math.ceil(s * 3)), w = []; let ws = 0; for (let j = -R; j <= R; j++) { const v = Math.exp(-(j * j) / (2 * s * s)); w.push(v); ws += v; } return { R, w: w.map(v => v / ws) }; };
+  const K = kern(sig);
+  const sm = p.map((_, i) => { let x = 0, y = 0; for (let j = -K.R; j <= K.R; j++) { const q = p[((i + j) % n + n) % n], v = K.w[j + K.R]; x += q[0] * v; y += q[1] * v; } return [x, y]; });
+  if (samp) {
+    const K2 = kern(sig * 0.5), def = new Float64Array(n), ds = new Float64Array(n);
+    for (let it = 0; it < 10; it++) {
+      let mx = 0;
+      for (let i = 0; i < n; i++) { const d = samp(sm[i][0], sm[i][1]) + needPx; def[i] = d > 0 ? d : 0; if (d > mx) mx = d; }
+      if (mx < 0.05) break;
+      const soft = it < 7;   // las primeras pasadas reparten el empuje para no dejar bultos
+      if (soft) for (let i = 0; i < n; i++) { let s = 0; for (let j = -K2.R; j <= K2.R; j++) s += def[((i + j) % n + n) % n] * K2.w[j + K2.R]; ds[i] = s * 1.3; }
+      for (let i = 0; i < n; i++) {
+        const d = soft ? ds[i] : def[i]; if (d <= 0) continue;
+        const x = sm[i][0], y = sm[i][1];
+        let gx = samp(x + 1, y) - samp(x - 1, y), gy = samp(x, y + 1) - samp(x, y - 1); const gl = Math.hypot(gx, gy);
+        if (gl < 1e-6) continue;
+        sm[i] = [x - gx / gl * d, y - gy / gl * d];
+      }
+    }
+  }
+  return resample(sm, 0.1 * pxPerMm);
+}
+// ---------- ajuste de curvas Bézier (Schneider) ----------
+// Convierte el contorno suavizado en el mínimo de curvas Bézier que lo siguen con un
+// error máximo dado. Las esquinas reales se conservan como nodos; en el resto la curva
+// es continua (tangente compartida), sin quiebres ni microondulaciones.
+const V = {
+  add: (a, b) => [a[0] + b[0], a[1] + b[1]], sub: (a, b) => [a[0] - b[0], a[1] - b[1]],
+  mul: (a, s) => [a[0] * s, a[1] * s], dot: (a, b) => a[0] * b[0] + a[1] * b[1],
+  len: a => Math.hypot(a[0], a[1]), norm: a => { const l = Math.hypot(a[0], a[1]) || 1; return [a[0] / l, a[1] / l]; },
+};
+function bezPt(b, t) { const s = 1 - t; return [s * s * s * b[0][0] + 3 * s * s * t * b[1][0] + 3 * s * t * t * b[2][0] + t * t * t * b[3][0], s * s * s * b[0][1] + 3 * s * s * t * b[1][1] + 3 * s * t * t * b[2][1] + t * t * t * b[3][1]]; }
+function bezD1(b, t) { const s = 1 - t; return [3 * (s * s * (b[1][0] - b[0][0]) + 2 * s * t * (b[2][0] - b[1][0]) + t * t * (b[3][0] - b[2][0])), 3 * (s * s * (b[1][1] - b[0][1]) + 2 * s * t * (b[2][1] - b[1][1]) + t * t * (b[3][1] - b[2][1]))]; }
+function bezD2(b, t) { const s = 1 - t; return [6 * (s * (b[2][0] - 2 * b[1][0] + b[0][0]) + t * (b[3][0] - 2 * b[2][0] + b[1][0])), 6 * (s * (b[2][1] - 2 * b[1][1] + b[0][1]) + t * (b[3][1] - 2 * b[2][1] + b[1][1]))]; }
+function chordParams(p, a, b) { const u = [0]; for (let i = a + 1; i <= b; i++) u.push(u[u.length - 1] + V.len(V.sub(p[i], p[i - 1]))); const L = u[u.length - 1] || 1; return u.map(x => x / L); }
+function genBez(p, a, b, u, t1, t2) {
+  const P0 = p[a], P3 = p[b]; let c00 = 0, c01 = 0, c11 = 0, x0 = 0, x1 = 0;
+  for (let i = 0; i < u.length; i++) {
+    const t = u[i], s = 1 - t, A1 = V.mul(t1, 3 * s * s * t), A2 = V.mul(t2, 3 * s * t * t);
+    c00 += V.dot(A1, A1); c01 += V.dot(A1, A2); c11 += V.dot(A2, A2);
+    const tmp = V.sub(p[a + i], V.add(V.mul(P0, s * s * s + 3 * s * s * t), V.mul(P3, 3 * s * t * t + t * t * t)));
+    x0 += V.dot(A1, tmp); x1 += V.dot(A2, tmp);
+  }
+  const det = c00 * c11 - c01 * c01, seg = V.len(V.sub(P3, P0)), eps = 1e-6 * seg;
+  let a1 = det ? (x0 * c11 - x1 * c01) / det : 0, a2 = det ? (c00 * x1 - c01 * x0) / det : 0;
+  if (!(a1 > eps) || !(a2 > eps) || a1 > seg * 2 || a2 > seg * 2) a1 = a2 = seg / 3;
+  return [P0, V.add(P0, V.mul(t1, a1)), V.add(P3, V.mul(t2, a2)), P3];
+}
+function maxErr(p, a, b, bz, u) { let m = 0, k = Math.floor((a + b) / 2); for (let i = 1; i < u.length - 1; i++) { const d = V.sub(bezPt(bz, u[i]), p[a + i]), e = V.dot(d, d); if (e >= m) { m = e; k = a + i; } } return [m, k]; }
+function reparam(p, a, bz, u) { return u.map((t, i) => { const d = V.sub(bezPt(bz, t), p[a + i]), d1 = bezD1(bz, t), d2 = bezD2(bz, t), num = V.dot(d, d1), den = V.dot(d1, d1) + V.dot(d, d2); const r = den ? t - num / den : t; return Math.min(1, Math.max(0, r)); }); }
+function tangentAt(p, i, dir, k) { // dirección promedio hacia adelante (dir=1) o atrás (dir=-1)
+  const n = p.length, j = Math.min(n - 1, Math.max(0, i + dir * k)); return V.norm(V.sub(p[j], p[i]));
+}
+function fitSeg(p, a, b, t1, t2, errSq, out, depth) {
+  if (b - a === 1 || depth > 40) { const d = V.len(V.sub(p[b], p[a])) / 3; out.push([p[a], V.add(p[a], V.mul(t1, d)), V.add(p[b], V.mul(t2, d)), p[b]]); return; }
+  let u = chordParams(p, a, b), bz = genBez(p, a, b, u, t1, t2), [e, split] = maxErr(p, a, b, bz, u);
+  if (e < errSq) { out.push(bz); return; }
+  if (e < errSq * 16) for (let it = 0; it < 12; it++) { u = reparam(p, a, bz, u); bz = genBez(p, a, b, u, t1, t2); [e, split] = maxErr(p, a, b, bz, u); if (e < errSq) { out.push(bz); return; } }
+  split = Math.min(b - 1, Math.max(a + 1, split));
+  const k = Math.max(1, Math.min(3, split - a, b - split));
+  const tc = V.norm(V.sub(p[split - k], p[split + k]));
+  fitSeg(p, a, split, t1, tc, errSq, out, depth + 1);
+  fitSeg(p, split, b, V.mul(tc, -1), t2, errSq, out, depth + 1);
+}
+// q: anillo cerrado denso y suavizado (sin repetir el primer punto), espaciado ~step
+// devuelve [[p0,c1,c2,p3], ...] cerrado
+function fitClosed(q, step, errTol, cornerDeg) {
+  const n = q.length, w = Math.max(2, Math.round(0.45 * (72 / 25.4) / step)); // ventana de ~0.45 mm a cada lado
+  const ang = new Float64Array(n);
+  for (let i = 0; i < n; i++) {
+    const a = V.norm(V.sub(q[i], q[(i - w + n) % n])), b = V.norm(V.sub(q[(i + w) % n], q[i]));
+    ang[i] = Math.acos(Math.max(-1, Math.min(1, V.dot(a, b)))) * 180 / Math.PI;
+  }
+  const corners = [];
+  for (let i = 0; i < n; i++) {
+    if (ang[i] < cornerDeg) continue;
+    let isMax = true; for (let j = -w; j <= w; j++) if (j && ang[(i + j + n) % n] > ang[i]) { isMax = false; break; }
+    if (isMax && (!corners.length || i - corners[corners.length - 1] > w)) corners.push(i);
+  }
+  if (corners.length > 1 && corners[0] + n - corners[corners.length - 1] <= w) corners.pop();
+  const errSq = errTol * errTol, out = [];
+  if (!corners.length) {
+    // sin esquinas: se abre en el punto 0 y se cierra con la misma tangente (continuidad total)
+    const p = q.concat([q[0]]), t = V.norm(V.sub(q[1 % n], q[(n - 1) % n]));
+    fitSeg(p, 0, p.length - 1, t, V.mul(t, -1), errSq, out, 0);
+    return out;
+  }
+  for (let c = 0; c < corners.length; c++) {
+    const s = corners[c], e = corners[(c + 1) % corners.length], len = ((e - s + n) % n) || n, p = [];
+    for (let i = 0; i <= len; i++) p.push(q[(s + i) % n]);
+    const k = Math.min(3, p.length - 1);
+    fitSeg(p, 0, p.length - 1, tangentAt(p, 0, 1, k), tangentAt(p, p.length - 1, -1, k), errSq, out, 0);
+  }
+  return out;
+}
+
+// contorno final: curvas Bézier mínimas; el error permitido es 0.4 % del tamaño de la pieza
+// (entre FIT_MIN_MM y FIT_MAX_MM) y las esquinas de más de CORNER_DEG se respetan
+function curveOf(ring, pxPerMm, k, sizeMm, noCorners, samp, needPx) {
+  const q = smoothRing(ring, pxPerMm, samp, needPx).map(([x, y]) => [x / k, y / k]);
+  const tol = Math.min(FIT_MAX_MM, Math.max(FIT_MIN_MM, sizeMm * 0.004));
+  return fitClosed(q, 0.1 * PT_PER_MM, tol * PT_PER_MM, noCorners ? 181 : CORNER_DEG);
+}
+function pathD(segs) { const f = v => v.toFixed(3); let d = `M${f(segs[0][0][0])} ${f(segs[0][0][1])}`; for (const b of segs) d += `C${f(b[1][0])} ${f(b[1][1])} ${f(b[2][0])} ${f(b[2][1])} ${f(b[3][0])} ${f(b[3][1])}`; return d + "Z"; }
+
+// ---------- análisis ----------
+function closeMask(mask, w, h, r) {
+  const d1 = edt(mask, w, h, 1), dil = new Uint8Array(w * h);
+  for (let i = 0; i < dil.length; i++) dil[i] = d1[i] <= r ? 1 : 0;
+  const d2 = edt(dil, w, h, 0);
+  for (let i = 0; i < mask.length; i++) if (d2[i] >= r - 0.5) mask[i] = 1;   // se conserva lo original y se suman los puentes
+}
+// El punto verde de la plantilla (junto a la escuadra superior derecha) no es parte de ningún ojito.
+// Se borra de la tinta; si estaba encima de un ojito, se repone lo que tapaba para que el contorno no se deforme.
+function removeDots(data, mask, color, w, h, pxPerMm) {
+  const n = w * h, seen = new Uint8Array(n), tol = 34;
+  const hit = i => { const j = i * 4; return mask[i] && Math.abs(data[j] - DOT_RGB[0]) < tol && Math.abs(data[j + 1] - DOT_RGB[1]) < tol && Math.abs(data[j + 2] - DOT_RGB[2]) < tol; };
+  for (let s = 0; s < n; s++) {
+    if (seen[s] || !hit(s)) continue;
+    const px = [s], st = [s]; seen[s] = 1; let x0 = w, y0 = h, x1 = 0, y1 = 0;
+    while (st.length) { const i = st.pop(), x = i % w, y = (i / w) | 0;
+      if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y;
+      for (const q of [x > 0 ? i - 1 : -1, x < w - 1 ? i + 1 : -1, y > 0 ? i - w : -1, y < h - 1 ? i + w : -1]) if (q >= 0 && !seen[q] && hit(q)) { seen[q] = 1; px.push(q); st.push(q); } }
+    const bw = (x1 - x0 + 1) / pxPerMm, bh = (y1 - y0 + 1) / pxPerMm, fill = px.length / ((x1 - x0 + 1) * (y1 - y0 + 1));
+    if (bw < DOT_MIN_MM || bh < DOT_MIN_MM || bw > DOT_MAX_MM || bh > DOT_MAX_MM || Math.abs(bw - bh) > 0.3 || fill < 0.62 || fill > 0.92) continue;
+    const r = 0.65 * pxPerMm, pad = Math.ceil(2 * r) + 4, X0 = Math.max(0, x0 - pad), Y0 = Math.max(0, y0 - pad), W = Math.min(w, x1 + pad + 1) - X0, H = Math.min(h, y1 + pad + 1) - Y0;
+    const dot = new Uint8Array(W * H); for (const i of px) dot[((i / w | 0) - Y0) * W + (i % w) - X0] = 1;
+    const dd = edt(dot, W, H, 1), m = new Uint8Array(W * H), gone = [];
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const li = y * W + x, pi = (Y0 + y) * w + X0 + x;
+      if (!mask[pi]) continue;
+      if (dd[li] <= 2.5) { mask[pi] = 0; gone.push(li); } else m[li] = 1; }   // el punto y su borde difuminado
+    const d1 = edt(m, W, H, 1), dil = new Uint8Array(W * H); for (let i = 0; i < dil.length; i++) dil[i] = d1[i] <= r ? 1 : 0;
+    const d2 = edt(dil, W, H, 0);
+    for (const li of gone) { const pi = (Y0 + (li / W | 0)) * w + X0 + li % W; if (d2[li] >= r - 0.5) { mask[pi] = 1; color[pi] = 1; } else color[pi] = 0; }
+  }
+}
+async function rasterPage(pdf, i, previewOnly) {
+  const page = await pdf.getPage(i), vp1 = page.getViewport({ scale: 1 });
+  let k = (previewOnly ? 150 : DPI) / 72; const maxPx = isIOS ? 6e6 : 16e6;
+  if (vp1.width * vp1.height * k * k > maxPx) k = Math.sqrt(maxPx / (vp1.width * vp1.height));
+  const vp = page.getViewport({ scale: k }), w = Math.ceil(vp.width), h = Math.ceil(vp.height);
+  const cv = document.createElement("canvas"); cv.width = w; cv.height = h;
+  const ctx = cv.getContext("2d", { willReadFrequently: true });
+  await page.render({ canvasContext: ctx, viewport: vp, background: "rgba(0,0,0,0)" }).promise;
+  const data = ctx.getImageData(0, 0, w, h).data;
+  const pw = Math.min(w, 1300), ph = Math.round(h * pw / w), pc = document.createElement("canvas"); pc.width = pw; pc.height = ph;
+  const px = pc.getContext("2d"); px.fillStyle = "#fff"; px.fillRect(0, 0, pw, ph); px.drawImage(cv, 0, 0, pw, ph);
+  const preview = pc.toDataURL("image/jpeg", 0.86); cv.width = cv.height = 1;
+  if (previewOnly) { page.cleanup(); return { wPt: vp1.width, hPt: vp1.height, preview, pieces: null }; }
+  const n = w * h, mask = new Uint8Array(n), color = new Uint8Array(n);
+  for (let p = 0, j = 0; p < n; p++, j += 4) {
+    const a = data[j + 3];
+    // tinta visible: opaca y no blanca (las formas blancas de relleno no cuentan)
+    const mn = Math.min(data[j], data[j + 1], data[j + 2]), mx = Math.max(data[j], data[j + 1], data[j + 2]);
+    color[p] = mn < 245 ? (mx < 60 ? 2 : 1) : 0;   // 2 = casi negro (pupila)
+    mask[p] = (a >= 40 && color[p]) ? 1 : 0;   // incluye trazos finos semitransparentes
+  }
+  removeDots(data, mask, color, w, h, PT_PER_MM * k);
+  // cierre morfológico (~0.08 mm): une los contornos muy finos que salen cortados al rasterizar
+  const raw = mask.slice();   // tinta original, para medir el grosor real de los trazos
+  closeMask(mask, w, h, Math.max(1.5, CLOSE_MM * PT_PER_MM * k));
+  page.cleanup();
+  return { wPt: vp1.width, hPt: vp1.height, k, w, h, mask, raw, color, preview, rotate: page.rotate || 0, pieces: null };
+}
+// Etiquetas con marco: se buscan por su interior (una zona en blanco encerrada, alargada o rectangular, con
+// texto adentro) y no por el marco en sí. Así no importa que el marco toque una línea guía, el borde de la
+// hoja o el ícono. El contorno sale del marco relleno y "abierto" (se le quitan las líneas finas pegadas), y
+// todo lo que hay adentro (ícono, letras, números) queda bloqueado para que nunca se corte por separado.
+function findLabels(P, lab, C, mmPerPx, thin) {
+  const { w, h } = P, pxPerMm = 1 / mmPerPx, n = w * h;
+  const blocked = new Uint8Array(n), labels = [];
+  const { lab: bl, comps: holes } = labelBg(P.mask, w, h);
+  // de menor a mayor: si una etiqueta queda encerrada en una zona más grande (p. ej. entre el marco del bloque
+  // y el borde gris de la imagen), primero se encuentra la etiqueta real y la zona grande se descarta
+  holes.sort((a, b) => a.cnt - b.cnt);
+  const tol = pxPerMm;
+  for (const g of holes) {
+    if (g.x0 === 0 || g.y0 === 0 || g.x1 === w - 1 || g.y1 === h - 1 || g.py < 1) continue;   // el fondo de la hoja
+    const gw = g.x1 - g.x0 + 1, gh = g.y1 - g.y0 + 1, maxS = Math.max(gw, gh) * mmPerPx, minS = Math.min(gw, gh) * mmPerPx;
+    if (minS < LABEL_MIN_MM || minS > LABEL_MAX_MM || maxS < 10 || maxS > LABEL_LEN_MM) continue;
+    if (blocked[g.py * w + g.px]) continue;                   // es parte de una etiqueta ya encontrada
+    if (labels.some(L => L.x0 >= g.x0 - tol && L.x1 <= g.x1 + tol && L.y0 >= g.y0 - tol && L.y1 <= g.y1 + tol)) continue;   // encierra una etiqueta: es el bloque, no la etiqueta
+    let pad = 6, X0 = g.x0 - pad, Y0 = g.y0 - pad, W = gw + 2 * pad, H = gh + 2 * pad, m = new Uint8Array(W * H);
+    for (let y = g.y0; y <= g.y1; y++) for (let x = g.x0; x <= g.x1; x++) if (bl[y * w + x] === g.id) m[(y - Y0) * W + x - X0] = 1;
+    fillHoles(m, W, H);
+    let area = 0; for (let i = 0; i < m.length; i++) area += m[i];
+    if (area / (gw * gh) < 0.8) continue;                     // no es un rectángulo ni una píldora
+    const kids = C.filter(c => c.x0 >= g.x0 && c.x1 <= g.x1 && c.y0 >= g.y0 && c.y1 <= g.y1 && m[((c.py | 0) - Y0) * W + (c.px | 0) - X0]);
+    const stroke = k => compMaxIn(lab, P.raw, w, k.id, k, false) * mmPerPx;
+    let ok;
+    if (maxS / minS >= 2.2) {   // alargada: texto + como mucho un ícono macizo, y poca tinta (no es una tira de ojitos)
+      const big = kids.filter(k => Math.min(k.x1 - k.x0 + 1, k.y1 - k.y0 + 1) * mmPerPx >= 0.45 * minS && stroke(k) > TEXT_STROKE_MM).length;
+      ok = kids.length >= 4 && big <= 1 && (area - g.cnt) / area <= 0.45;
+    } else                      // cuadrada: solo texto (trazos finos) adentro
+      ok = minS >= 6 && kids.length >= 2 && kids.every(k => thin(stroke(k), minS));
+    if (!ok) continue;
+    // contorno: el marco (la tinta que rodea el hueco) relleno, sin las líneas finas que tenga pegadas
+    const frameId = lab[(g.py - 1) * w + g.px]; if (!frameId) continue;
+    const roundPx = Math.min(ROUND_MM, 0.25 * minS) * pxPerMm;
+    pad = Math.ceil(2.5 * pxPerMm) + 8; X0 = g.x0 - pad; Y0 = g.y0 - pad; W = gw + 2 * pad; H = gh + 2 * pad; m = new Uint8Array(W * H);
+    for (let y = 0; y < H; y++) { const py = Y0 + y; if (py < 0 || py >= h) continue;
+      for (let x = 0; x < W; x++) { const px = X0 + x; if (px >= 0 && px < w && lab[py * w + px] === frameId) m[y * W + x] = 1; } }
+    fillHoles(m, W, H);
+    const o = ringFromMask(m, W, H, X0, Y0, OFFSET_MM * pxPerMm, roundPx);
+    if (!o) continue;
+    let rx0 = 1e9, ry0 = 1e9, rx1 = -1e9, ry1 = -1e9;
+    for (const [x, y] of o.ring) { if (x < rx0) rx0 = x; if (x > rx1) rx1 = x; if (y < ry0) ry0 = y; if (y > ry1) ry1 = y; }
+    const lim = 2 * pxPerMm, across = gw < gh ? [g.x0 - rx0, rx1 - g.x1] : [g.y0 - ry0, ry1 - g.y1];
+    if (across[0] > lim || across[1] > lim || across[0] < 0 || across[1] < 0) continue;   // el relleno se salió del marco: no es confiable
+    for (let y = 0; y < H; y++) { const py = Y0 + y; if (py < 0 || py >= h) continue;
+      for (let x = 0; x < W; x++) { const px = X0 + x; if (px >= 0 && px < w && o.f[y * W + x] > -2.5) blocked[py * w + px] = 1; } }
+    labels.push({ ring: o.ring, samp: o.samp, sizeMm: Math.max(rx1 - rx0, ry1 - ry0) * mmPerPx, x0: rx0, y0: ry0, x1: rx1, y1: ry1 });
+  }
+  // Marcos abiertos: si algo de la hoja tapa un pedacito del marco (p. ej. el rectángulo blanco que protege
+  // la escuadra de registro), el interior ya no es una zona cerrada y no se encuentra arriba. Se buscan los
+  // marcos finos del tamaño de una etiqueta, se cierra la abertura (hasta GAP_MM) y se revisan igual.
+  const stroke = k => compMaxIn(lab, P.raw, w, k.id, k, false) * mmPerPx;
+  const gapPx = GAP_MM * pxPerMm;
+  for (const f of C) {
+    {
+      const fMax = Math.max(f.x1 - f.x0 + 1, f.y1 - f.y0 + 1) * mmPerPx, fMin = Math.min(f.x1 - f.x0 + 1, f.y1 - f.y0 + 1) * mmPerPx;
+      if (fMax < 10 || fMax > 1.5 * LABEL_LEN_MM || fMin < LABEL_MIN_MM) continue;
+    }
+    if (blocked[(f.py | 0) * w + (f.px | 0)]) continue;
+    if (stroke(f) > TEXT_STROKE_MM) continue;                 // un marco es una línea fina
+    const pad = Math.ceil(gapPx + 2.5 * pxPerMm) + 8, X0 = f.x0 - pad, Y0 = f.y0 - pad, W = f.x1 - f.x0 + 1 + 2 * pad, H = f.y1 - f.y0 + 1 + 2 * pad;
+    let m = new Uint8Array(W * H);
+    for (let y = 0; y < H; y++) { const py = Y0 + y; if (py < 0 || py >= h) continue;
+      for (let x = 0; x < W; x++) { const px = X0 + x; if (px >= 0 && px < w && lab[py * w + px] === f.id) m[y * W + x] = 1; } }
+    const open = m.slice(); fillHoles(open, W, H);
+    let ink = 0, openA = 0; for (let i = 0; i < m.length; i++) { ink += m[i]; openA += open[i]; }
+    if (openA > 1.5 * ink) continue;                          // ya estaba cerrado: lo resolvió la búsqueda normal
+    // se suma lo que está dentro del marco o casi (texto, ícono y los pedazos del marco que quedaron sueltos)
+    const near = new Set(C.filter(c => c !== f && c.x0 >= f.x0 - gapPx && c.x1 <= f.x1 + gapPx && c.y0 >= f.y0 - gapPx && c.y1 <= f.y1 + gapPx).map(c => c.id));
+    for (let y = 0; y < H; y++) { const py = Y0 + y; if (py < 0 || py >= h) continue;
+      for (let x = 0; x < W; x++) { const px = X0 + x; if (px >= 0 && px < w && near.has(lab[py * w + px])) m[y * W + x] = 1; } }
+    const frame = m.slice();
+    closeMask(m, W, H, gapPx); fillHoles(m, W, H);
+    // apertura: se quitan las líneas finas pegadas al marco (bordes de imagen, guías) y queda solo la etiqueta
+    const rOpen = 0.6 * pxPerMm, dIn = edt(m, W, H, 0), core = new Uint8Array(W * H);
+    for (let i = 0; i < core.length; i++) core[i] = dIn[i] > rOpen ? 1 : 0;
+    const dOut = edt(core, W, H, 1); m = new Uint8Array(W * H);
+    let x0 = 1e9, y0 = 1e9, x1 = -1, y1 = -1, area = 0, inkIn = 0;
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const i = y * W + x; if (dOut[i] > rOpen) continue;
+      m[i] = 1; area++; inkIn += frame[i]; if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+    if (!area) continue;
+    // una etiqueta es convexa (rectángulo o píldora): se usa la envolvente convexa, así lo que tapó el marco no deja muesca
+    convexFill(m, W, H);
+    const fw = x1 - x0 + 1, fh = y1 - y0 + 1, maxS = Math.max(fw, fh) * mmPerPx, minS = Math.min(fw, fh) * mmPerPx;
+    if (minS < LABEL_MIN_MM || minS > LABEL_MAX_MM + 1 || maxS < 10 || maxS > LABEL_LEN_MM) continue;
+    if (area < 3 * inkIn || area / (fw * fh) < 0.8) continue;  // no se cerró en un rectángulo o píldora hueca
+    const bx0 = X0 + x0, by0 = Y0 + y0, bx1 = X0 + x1, by1 = Y0 + y1;
+    if (labels.some(L => L.x0 <= bx1 && L.x1 >= bx0 && L.y0 <= by1 && L.y1 >= by0)) continue;
+    const kids = C.filter(c => c !== f && c.x0 >= bx0 && c.x1 <= bx1 && c.y0 >= by0 && c.y1 <= by1 && m[((c.py | 0) - Y0) * W + (c.px | 0) - X0]);
+    const kidInk = kids.reduce((s, k) => s + k.cnt, 0), inMin = minS - 2 * stroke(f);
+    let ok;
+    if (maxS / minS >= 2.2) {
+      const big = kids.filter(k => Math.min(k.x1 - k.x0 + 1, k.y1 - k.y0 + 1) * mmPerPx >= 0.45 * inMin && stroke(k) > TEXT_STROKE_MM).length;
+      ok = kids.length >= 4 && big <= 1 && kidInk / area <= 0.45;
+    } else
+      ok = minS >= 6 && kids.length >= 2 && kids.every(k => thin(stroke(k), inMin));
+    if (!ok) continue;
+    const o = ringFromMask(m, W, H, X0, Y0, OFFSET_MM * pxPerMm, Math.min(ROUND_MM, 0.25 * minS) * pxPerMm);
+    if (!o) continue;
+    let rx0 = 1e9, ry0 = 1e9, rx1 = -1e9, ry1 = -1e9;
+    for (const [x, y] of o.ring) { if (x < rx0) rx0 = x; if (x > rx1) rx1 = x; if (y < ry0) ry0 = y; if (y > ry1) ry1 = y; }
+    for (let y = 0; y < H; y++) { const py = Y0 + y; if (py < 0 || py >= h) continue;
+      for (let x = 0; x < W; x++) { const px = X0 + x; if (px >= 0 && px < w && o.f[y * W + x] > -2.5) blocked[py * w + px] = 1; } }
+    labels.push({ ring: o.ring, samp: o.samp, sizeMm: Math.max(rx1 - rx0, ry1 - ry0) * mmPerPx, x0: rx0, y0: ry0, x1: rx1, y1: ry1 });
+  }
+  return { labels, blocked };
+}
+// Textos sin marco: se agrupan las letras sueltas en bloques, los bloques de una misma línea se unen
+// (Ref. … nombre … pares) si no hay nada entre ellos, y a cada texto se le crea su etiqueta rectangular.
+function textLabels(P, letters, eyes, mmPerPx) {
+  const { w, h } = P, pxPerMm = 1 / mmPerPx, gap = TEXT_GAP_MM * pxPerMm, n = letters.length, out = [];
+  if (n < 3) return out;
+  letters.sort((a, b) => a.x0 - b.x0);
+  const par = letters.map((_, i) => i), find = a => { while (par[a] !== a) { par[a] = par[par[a]]; a = par[a]; } return a; };
+  for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) {
+    const a = letters[i], b = letters[j];
+    if (b.x0 - a.x1 > gap) { if (b.x0 - a.x0 > TEXT_MAX_MM * pxPerMm + gap) break; continue; }
+    if (Math.max(a.y0, b.y0) - Math.min(a.y1, b.y1) <= gap) par[find(i)] = find(j);
+  }
+  const map = new Map();
+  letters.forEach((c, i) => { const r = find(i); let b = map.get(r); if (!b) map.set(r, b = { x0: 1e9, y0: 1e9, x1: -1, y1: -1, n: 0 });
+    b.x0 = Math.min(b.x0, c.x0); b.y0 = Math.min(b.y0, c.y0); b.x1 = Math.max(b.x1, c.x1); b.y1 = Math.max(b.y1, c.y1); if (!c.speck) b.n++; });
+  let blocks = [...map.values()];
+  const clear = (x0, y0, x1, y1) => { for (let y = Math.max(0, y0); y <= Math.min(h - 1, y1); y++) for (let x = Math.max(0, x0), o = y * w; x <= Math.min(w - 1, x1); x++) if (P.mask[o + x]) return false; return true; };
+  const orient = b => { const bw = b.x1 - b.x0 + 1, bh = b.y1 - b.y0 + 1; return bw >= 1.5 * bh ? "h" : bh >= 1.5 * bw ? "v" : ""; };
+  const lineMax = TEXT_LINE_MM * pxPerMm;
+  const joins = (a, b) => {
+    const oa = orient(a), ob = orient(b);
+    if (oa !== "v" && ob !== "v") {   // misma línea horizontal
+      const ov = Math.min(a.y1, b.y1) - Math.max(a.y0, b.y0) + 1, g0 = Math.min(a.x1, b.x1) + 1, g1 = Math.max(a.x0, b.x0) - 1;
+      if (ov >= 0.6 * Math.min(a.y1 - a.y0 + 1, b.y1 - b.y0 + 1) && g1 - g0 < lineMax && (g1 < g0 || clear(g0, Math.min(a.y0, b.y0), g1, Math.max(a.y1, b.y1)))) return true;
+    }
+    if (oa !== "h" && ob !== "h") {   // misma línea vertical (texto girado)
+      const ov = Math.min(a.x1, b.x1) - Math.max(a.x0, b.x0) + 1, g0 = Math.min(a.y1, b.y1) + 1, g1 = Math.max(a.y0, b.y0) - 1;
+      if (ov >= 0.6 * Math.min(a.x1 - a.x0 + 1, b.x1 - b.x0 + 1) && g1 - g0 < lineMax && (g1 < g0 || clear(Math.min(a.x0, b.x0), g0, Math.max(a.x1, b.x1), g1))) return true;
+    }
+    return false;
+  };
+  for (let again = true; again;) { again = false;
+    for (let i = 0; i < blocks.length && !again; i++) for (let j = i + 1; j < blocks.length; j++) if (joins(blocks[i], blocks[j])) {
+      const a = blocks[i], b = blocks[j];
+      blocks[i] = { x0: Math.min(a.x0, b.x0), y0: Math.min(a.y0, b.y0), x1: Math.max(a.x1, b.x1), y1: Math.max(a.y1, b.y1), n: a.n + b.n };
+      blocks.splice(j, 1); again = true; break; }
+  }
+  for (const b of blocks) {
+    const long = Math.max(b.x1 - b.x0, b.y1 - b.y0) * mmPerPx, short = Math.min(b.x1 - b.x0, b.y1 - b.y0) * mmPerPx;
+    if (b.n < 3 || long < 6 || short < 1 || short > 14) continue;
+    if (eyes.some(e => e.x0 <= b.x1 && e.x1 >= b.x0 && e.y0 <= b.y1 && e.y1 >= b.y0)) continue;   // está sobre una pieza: no es una etiqueta
+    // margen de cada lado: el mayor que no toque nada más (ojitos, marcos de hoja, otras etiquetas)
+    const halo = Math.ceil(0.3 * pxPerMm), base = Math.round(0.3 * pxPerMm), steps = [TEXT_PAD_MM, 1.2, 0.9, 0.6];
+    const side = test => { for (const mm of steps) { const p = Math.round(mm * pxPerMm); if (test(p + halo)) return p; } return base; };
+    const xa = b.x0 - base - halo, xb = b.x1 + base + halo, ya = b.y0 - base - halo, yb = b.y1 + base + halo;
+    const pT = side(p => clear(xa, b.y0 - p, xb, b.y0 - 1)), pB = side(p => clear(xa, b.y1 + 1, xb, b.y1 + p));
+    const pL = side(p => clear(b.x0 - p, ya, b.x0 - 1, yb)), pR = side(p => clear(b.x1 + 1, ya, b.x1 + p, yb));
+    const k = P.k, x0 = Math.max(0, b.x0 - pL) / k, y0 = Math.max(0, b.y0 - pT) / k, x1 = Math.min(w, b.x1 + 1 + pR) / k, y1 = Math.min(h, b.y1 + 1 + pB) / k;
+    const r = Math.min(ROUND_MM, 0.35 * Math.min(x1 - x0, y1 - y0) / PT_PER_MM) * PT_PER_MM;
+    out.push({ curvesBy: { [OFFSET_MM]: roundRectSegs(x0, y0, x1, y1, r) }, kind: "etiqueta", auto: true, excluded: false });
+  }
+  return out;
+}
+function findEyes(P) {
+  const mmPerPx = 1 / (PT_PER_MM * P.k), pxPerMm = 1 / mmPerPx, offPx = OFFSET_MM / mmPerPx;
+  const { lab, comps } = label(P.mask, P.w, P.h, P.color);
+  const thin = (mx, sz) => mx < Math.max(THIN_MM, 0.2 * sz);   // un ojito tiene un relleno grueso (iris, pupila); el texto no
+  const minPx = 1 / mmPerPx;   // polvo y puntos de menos de 1 mm
+  // 1) etiquetas con marco; lo que queda dentro de una etiqueta ya no se analiza
+  const { labels, blocked } = findLabels(P, lab, comps.filter(c => Math.max(c.x1 - c.x0, c.y1 - c.y0) + 1 >= 0.5 * minPx), mmPerPx, thin);
+  const free = comps.filter(c => !blocked[(c.py | 0) * P.w + (c.px | 0)]);
+  // contorno exterior (sin offset) de cada componente que no sea polvo o letra suelta
+  const C = free.filter(c => Math.max(c.x1 - c.x0, c.y1 - c.y0) + 1 >= minPx);
+  for (const c of C) { const o = outerRing(lab, P.w, c.id, c, 0); c.ring = o ? o.ring : null; c.area = o ? o.area : 0; c.maxIn = compMaxIn(lab, P.raw, P.w, c.id, c, false) * mmPerPx; c.maxFill = compMaxIn(lab, P.raw, P.w, c.id, c, true) * mmPerPx; }
+  // árbol de contención: el padre es el menor contorno que encierra al componente
+  const valid = C.filter(c => c.ring).sort((a, b) => a.area - b.area);
+  for (const c of valid) {
+    c.kids = [];
+    c.parent = valid.find(o => o !== c && o.area > c.area && c.px > o.x0 && c.px < o.x1 + 1 && c.py > o.y0 && c.py < o.y1 + 1 && inRing(c.px, c.py, o.ring)) || null;
+  }
+  for (const c of valid) if (c.parent) c.parent.kids.push(c);
+  // totales del subárbol: grosor máximo y tinta oscura (pupilas), contando lo que hay adentro
+  const sub = c => { if (c.sMax != null) return; c.sMax = c.maxIn; c.sFill = c.maxFill; c.sDk = c.dk; c.sCnt = c.cnt;
+    for (const k of c.kids) { sub(k); c.sMax = Math.max(c.sMax, k.sMax); c.sFill = Math.max(c.sFill, k.sFill); c.sDk += k.sDk; c.sCnt += k.sCnt; } };
+  valid.forEach(sub);
+  const eyes = [], letters = [];
+  const visit = c => {
+    const wMm = (c.x1 - c.x0 + 1) * mmPerPx, hMm = (c.y1 - c.y0 + 1) * mmPerPx;
+    const maxS = Math.max(wMm, hMm), minS = Math.min(wMm, hMm), aspect = maxS / minS;
+    const solidity = c.area / ((c.x1 - c.x0 + 1) * (c.y1 - c.y0 + 1));
+    if (maxS > MAX_MM || c.nw / c.cnt < 0.05) { c.kids.forEach(visit); return; }   // marco de la hoja o forma blanca invisible: entrar
+    // lo que no es ojito y tiene trazo de letra se guarda: puede ser un texto sin marco
+    const no = () => { if (maxS <= TEXT_MAX_MM && c.maxIn <= TEXT_STROKE_MM) letters.push(c); };
+    if (aspect > 2.2) return no();                            // línea suelta o letra alargada
+    if (minS < MIN_MM) return no();                           // detalle suelto
+    // letra, línea o contorno vacío: en piezas chicas se mide la tinta real; en grandes, rellenando huecos (lunares)
+    // en piezas chicas el grosor exigido no pasa de SMALL_STROKE_MM: un brillo grande en el centro de la pupila
+    // (flor, estrella) reduce el círculo que cabe en la tinta, y aun así es más grueso que cualquier letra
+    const thinSmall = c.sMax < Math.max(THIN_MM, Math.min(0.2 * minS, SMALL_STROKE_MM));
+    if (maxS < SMALL_MM ? thinSmall : (thin(c.sMax, minS) && thin(c.sFill, minS))) return no();
+    // pieza chica: o tiene pupila oscura o es un relleno macizo (ojitos cerrados, pupilas de color); una letra gruesa no cumple ninguna
+    if (maxS < SMALL_MM && c.sDk / c.sCnt < 0.08 && c.sMax < 0.25 * minS) return no();
+    if (solidity < 0.45) return no();                         // escuadra de registro u otra forma abierta
+    c.kind = "ojito"; eyes.push(c);                          // ojito (con su contorno fino): lo de adentro no se corta
+  };
+  valid.filter(c => !c.parent).forEach(visit);
+  // 2) curvas de corte
+  const pieces = [];
+  for (const c of eyes) {
+    const o = outerRing(lab, P.w, c.id, c, offPx, null); if (!o) continue;
+    const sizeMm = Math.max(c.x1 - c.x0 + 1, c.y1 - c.y0 + 1) * mmPerPx;
+    pieces.push({ curvesBy: { [OFFSET_MM]: curveOf(o.ring, pxPerMm, P.k, sizeMm, false, o.samp, 0.75 * offPx) }, kind: "ojito", excluded: false });
+  }
+  for (const L of labels) pieces.push({ curvesBy: { [OFFSET_MM]: curveOf(L.ring, pxPerMm, P.k, L.sizeMm, true, L.samp, 0.75 * offPx) }, kind: "etiqueta", excluded: false });
+  // 3) textos sin marco: letras sueltas + puntos chicos que no quedaron dentro de ninguna pieza
+  for (const c of free) if (Math.max(c.x1 - c.x0, c.y1 - c.y0) + 1 < minPx) { c.speck = true; letters.push(c); }
+  for (const t of textLabels(P, letters, eyes.concat(labels), mmPerPx)) pieces.push(t);
+  P.pieces = pieces;
+  P.lab = P.color = P.mask = P.raw = null;   // se libera la memoria de la página
+}
+
+// ---------- archivos ----------
+const jobs = []; let uid = 0, busy = false;
+const curvesOf = pc => pc.curvesBy[OFFSET_MM];
+async function addFiles(list) {
+  const pdfs = [...list].filter(f => /pdf$/i.test(f.type) || /\.pdf$/i.test(f.name));
+  if (!pdfs.length) { toast("Sube archivos PDF"); return; }
+  for (const f of pdfs) {
+    const J = { id: ++uid, name: f.name, bytes: new Uint8Array(await f.arrayBuffer()), pages: [], done: false, status: "En espera…", error: null };
+    J.el = document.createElement("section"); J.el.className = "job"; $("jobs").appendChild(J.el);
+    jobs.push(J); renderJob(J);
+  }
+  renderTop();
+  for (const J of jobs) if (!J.pages.length && !J.error) await loadPreview(J);
+}
+async function loadPreview(J) {
+  J.status = "Leyendo PDF…"; renderJob(J);
+  try {
+    const pdf = await pdfjsLib.getDocument({ data: J.bytes.slice(), isEvalSupported: false }).promise;
+    for (let i = 1; i <= pdf.numPages; i++) J.pages.push(await rasterPage(pdf, i, true));
+    pdf.destroy(); J.status = null;
+  } catch (e) { console.error(e); J.error = "No se pudo leer este PDF. Revisa que no tenga contraseña."; J.status = null; }
+  renderJob(J); renderTop();
+}
+async function analyzeJob(J) {
+  const pdf = await pdfjsLib.getDocument({ data: J.bytes.slice(), isEvalSupported: false }).promise;
+  for (let i = 1; i <= pdf.numPages; i++) {
+    J.status = `Trazando contornos, página ${i} de ${pdf.numPages}…`; renderJob(J); await tick();
+    const P = await rasterPage(pdf, i, false);
+    findEyes(P); P.preview = J.pages[i - 1] ? J.pages[i - 1].preview : P.preview;
+    J.pages[i - 1] = P;
+  }
+  pdf.destroy(); J.done = true; J.status = null; renderJob(J);
+}
+async function generateAll() {
+  if (busy) return; busy = true; renderTop();
+  for (const J of jobs) {
+    if (J.done || J.error || !J.pages.length) continue;
+    try { await analyzeJob(J); } catch (e) { console.error(e); J.error = "No se pudo trazar este archivo."; J.status = null; renderJob(J); }
+    renderTop();
+  }
+  busy = false; jobs.forEach(renderJob); renderTop();
+}
+
+// ---------- exportar ----------
+async function buildPdf(J) {
+  const { PDFDocument, pushGraphicsState, popGraphicsState, setLineWidth, setLineJoin, LineJoinStyle, setStrokingRgbColor, moveTo, appendBezierCurve, closePath, stroke } = PDFLib;
+  // hoja nueva del mismo tamaño: fondo blanco de imagen (no vector) que marca el área
+  // de la hoja para la coordenada en AnyCut + una línea de corte por ojito
+  const doc = await PDFDocument.create();
+  const wc = document.createElement("canvas"); wc.width = wc.height = 4;
+  const wx = wc.getContext("2d"); wx.fillStyle = "#fff"; wx.fillRect(0, 0, 4, 4);
+  const blank = await doc.embedPng(new Uint8Array(await (await new Promise(r => wc.toBlob(r, "image/png"))).arrayBuffer()));
+  for (const P of J.pages) {
+    const pg = doc.addPage([P.wPt, P.hPt]), X = x => x, Y = y => P.hPt - y;
+    pg.drawImage(blank, { x: 0, y: 0, width: P.wPt, height: P.hPt });
+    const ops = [pushGraphicsState(), setLineWidth(0.25), setLineJoin(LineJoinStyle.Round)];
+    // cada pieza es un trazo independiente: ojitos en magenta, etiquetas en rojo
+    // (en AnyCut el rojo se puede configurar con más pasadas o más presión)
+    // el orden del PDF es el orden en que corta la máquina: se recorre de vecino en vecino
+    let cur = [0, 0];
+    for (const kind of ["ojito", "etiqueta"]) {
+      ops.push(kind === "etiqueta" ? setStrokingRgbColor(1, 0, 0) : setStrokingRgbColor(1, 0, 1));
+      const ordered = cutOrder((P.pieces || []).filter(pc => !pc.excluded && pc.kind === kind), cur);
+      cur = ordered.end;
+      for (const segs of ordered.paths) {
+        ops.push(moveTo(X(segs[0][0][0]), Y(segs[0][0][1])));
+        for (const [, a, b2, c] of segs) ops.push(appendBezierCurve(X(a[0]), Y(a[1]), X(b2[0]), Y(b2[1]), X(c[0]), Y(c[1])));
+        ops.push(closePath(), stroke());
+      }
+    }
+    ops.push(popGraphicsState()); pg.pushOperators(...ops);
+  }
+  return doc.save({ useObjectStreams: false });
+}
+// Orden de corte: la máquina corta en el orden en que vienen los trazos. Si saltan de un lado a otro
+// de la hoja, los rodillos la llevan y la traen cientos de veces, el papel patina un poco en cada viaje
+// y el corte se va corriendo respecto a la impresión. Aquí se ordena de vecino en vecino (cada pieza
+// sigue con la más cercana) y cada contorno arranca en su punto más cercano a donde quedó la cuchilla.
+function cutOrder(pieces, start) {
+  const items = pieces.map(pc => { const segs = curvesOf(pc); let x = 0, y = 0;
+    for (const s of segs) { x += s[0][0]; y += s[0][1]; } return { segs, cx: x / segs.length, cy: y / segs.length }; });
+  const paths = [], used = new Uint8Array(items.length); let cur = start;
+  // rejilla para buscar el vecino rápido
+  const G = 20, grid = new Map(), key = (i, j) => i + "," + j;
+  items.forEach((it, k) => { const kk = key(Math.floor(it.cx / G), Math.floor(it.cy / G)); (grid.get(kk) || grid.set(kk, []).get(kk)).push(k); });
+  for (let left = items.length; left > 0; left--) {
+    let best = -1, bd = Infinity;
+    const ci = Math.floor(cur[0] / G), cj = Math.floor(cur[1] / G);
+    for (let r = 0; best < 0 || r * G <= Math.sqrt(bd) + G; r++) {
+      for (let i = ci - r; i <= ci + r; i++) for (let j = cj - r; j <= cj + r; j++) {
+        if (Math.max(Math.abs(i - ci), Math.abs(j - cj)) !== r) continue;
+        for (const k of grid.get(key(i, j)) || []) { if (used[k]) continue;
+          const d = (items[k].cx - cur[0]) ** 2 + (items[k].cy - cur[1]) ** 2; if (d < bd) { bd = d; best = k; } }
+      }
+      if (r > 400) break;
+    }
+    used[best] = 1;
+    let segs = items[best].segs, s0 = 0, sd = Infinity;
+    segs.forEach((s, i) => { const d = (s[0][0] - cur[0]) ** 2 + (s[0][1] - cur[1]) ** 2; if (d < sd) { sd = d; s0 = i; } });
+    segs = segs.slice(s0).concat(segs.slice(0, s0));
+    paths.push(segs); cur = segs[0][0];
+  }
+  return { paths, end: cur };
+}
+const cutName = J => J.name.replace(/\.pdf$/i, "") + "_corte.pdf";
+async function saveFile(filename, blob) {
+  const dl = await downloadsP;
+  if (dl) {
+    try { await dl.save({ filename, data: blob }); toast("Guardado: " + filename); }
+    catch (e) { toast(e && e.code === "declined" ? "Descarga cancelada" : "No se pudo guardar el archivo aquí."); }
+  } else {
+    const u = URL.createObjectURL(blob), a = document.createElement("a"); a.href = u; a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 4000); toast("Listo: " + filename);
+  }
+}
+async function download(J, btn) {
+  btn.disabled = true;
+  try { await saveFile(cutName(J), new Blob([await buildPdf(J)], { type: "application/pdf" })); }
+  catch (e) { console.error(e); toast("No se pudo generar el PDF."); }
+  btn.disabled = false;
+}
+async function downloadAll(btn) {
+  const ready = jobs.filter(J => J.done);
+  if (ready.length === 1) return download(ready[0], btn);
+  btn.disabled = true;
+  try {
+    const zip = new JSZip(), used = new Set();
+    for (const J of ready) { let n = cutName(J), k = 2; while (used.has(n)) n = cutName(J).replace(/\.pdf$/, `_${k++}.pdf`); used.add(n); zip.file(n, await buildPdf(J)); }
+    await saveFile(`cortes_${ready.length}_archivos.zip`, await zip.generateAsync({ type: "blob" }));
+  } catch (e) { console.error(e); toast("No se pudo armar el ZIP."); }
+  btn.disabled = false;
+}
+
+// ---------- vista ----------
+const NS = "http://www.w3.org/2000/svg";
+function counts(J) {
+  const cnt = k => J.pages.reduce((s, P) => s + (P.pieces || []).filter(p => !p.excluded && p.kind === k).length, 0);
+  return { o: cnt("ojito"), e: cnt("etiqueta"), a: J.pages.reduce((s, P) => s + (P.pieces || []).filter(p => !p.excluded && p.auto).length, 0) };
+}
+function renderTop() {
+  const el = $("top"); el.hidden = !jobs.length; el.textContent = ""; $("empty").hidden = !!jobs.length;
+  if (!jobs.length) return;
+  const pend = jobs.filter(J => !J.done && !J.error && J.pages.length).length, done = jobs.filter(J => J.done);
+  const info = document.createElement("div"); info.style.minWidth = "0";
+  const t = document.createElement("div"); t.className = "lbl"; t.textContent = `${jobs.length} archivo${jobs.length === 1 ? "" : "s"}`;
+  const m = document.createElement("div"); m.className = "meta";
+  const tot = done.reduce((a, J) => { const c = counts(J); a.o += c.o; a.e += c.e; return a; }, { o: 0, e: 0 });
+  m.textContent = done.length ? `${tot.o} ojitos + ${tot.e} etiquetas en ${done.length} listo${done.length === 1 ? "" : "s"}` : "Sin contornos todavía";
+  info.append(t, m);
+  const acts = document.createElement("div"); acts.className = "acts";
+  if (pend || busy) {
+    const g = document.createElement("button"); g.className = "cta"; g.type = "button";
+    g.textContent = busy ? "Trazando…" : `Generar contorno${pend > 1 ? ` (${pend} archivos)` : ""}`;
+    g.disabled = busy; g.addEventListener("click", generateAll); acts.appendChild(g);
+  }
+  if (done.length) {
+    const d = document.createElement("button"); d.type = "button"; if (!pend && !busy) d.className = "primary";
+    d.textContent = done.length > 1 ? `Descargar todos (.zip)` : "Descargar PDF de corte";
+    d.disabled = busy; d.addEventListener("click", () => downloadAll(d)); acts.appendChild(d);
+  }
+  const clr = document.createElement("button"); clr.type = "button"; clr.textContent = "Quitar todos"; clr.disabled = busy;
+  clr.addEventListener("click", () => { jobs.splice(0).forEach(J => J.el.remove()); renderTop(); });
+  acts.appendChild(clr);
+  el.append(info, acts);
+}
+function renderJob(J) {
+  const el = J.el; el.textContent = "";
+  const bar = document.createElement("div"); bar.className = "bar";
+  const left = document.createElement("div"); left.style.minWidth = "0";
+  const nm = document.createElement("div"); nm.className = "fname"; nm.textContent = J.name;
+  const meta = document.createElement("div"); meta.className = "meta";
+  if (J.pages.length) {
+    const P = J.pages[0];
+    let txt = `${(P.wPt / PT_PER_MM).toFixed(0)} × ${(P.hPt / PT_PER_MM).toFixed(0)} mm · ${J.pages.length} pág.`;
+    if (J.done) { const c = counts(J); txt += ` · ${c.o} ojitos${c.e ? ` + ${c.e} etiqueta${c.e === 1 ? "" : "s"} (en rojo)` : ""} a ${OFFSET_MM} mm`;
+      if (c.a) txt += ` · ${c.a} etiqueta${c.a === 1 ? " creada" : "s creadas"} para texto sin marco`; }
+    meta.textContent = txt;
+  }
+  left.append(nm, meta); bar.appendChild(left);
+  const acts = document.createElement("div"); acts.className = "acts";
+  if (J.done) {
+    const d = document.createElement("button"); d.type = "button"; d.textContent = "Descargar";
+    d.disabled = busy; d.addEventListener("click", () => download(J, d)); acts.appendChild(d);
+  }
+  const rm = document.createElement("button"); rm.type = "button"; rm.textContent = "Quitar"; rm.disabled = busy && !J.done && !J.error;
+  rm.addEventListener("click", () => { jobs.splice(jobs.indexOf(J), 1); el.remove(); renderTop(); });
+  acts.appendChild(rm);
+  bar.appendChild(acts); el.appendChild(bar);
+  const msg = J.error || J.status;
+  if (msg) { const s = document.createElement("div"); s.className = "status"; s.textContent = msg; el.appendChild(s); }
+  J.pages.forEach((P, pi) => {
+    const fig = document.createElement("figure"); fig.className = "sheet";
+    const svg = document.createElementNS(NS, "svg"); svg.setAttribute("viewBox", `0 0 ${P.wPt} ${P.hPt}`);
+    svg.setAttribute("role", "img"); svg.setAttribute("aria-label", `${J.name}, página ${pi + 1}`);
+    const im = document.createElementNS(NS, "image"); im.setAttribute("href", P.preview); im.setAttribute("width", P.wPt); im.setAttribute("height", P.hPt); svg.appendChild(im);
+    for (const pc of P.pieces || []) {
+      const p = document.createElementNS(NS, "path");
+      p.setAttribute("d", pathD(curvesOf(pc)));
+      p.setAttribute("class", "pc" + (pc.kind === "etiqueta" ? " lb" : "") + (pc.excluded ? " x" : ""));
+      p.addEventListener("click", () => { pc.excluded = !pc.excluded; renderJob(J); renderTop(); });
+      svg.appendChild(p);
+    }
+    fig.appendChild(svg); el.appendChild(fig);
+  });
+}
+
+// ---------- entrada ----------
+$("file").addEventListener("change", e => { addFiles(e.target.files); e.target.value = ""; });
+const drop = $("drop");
+["dragenter", "dragover"].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add("over"); }));
+["dragleave", "drop"].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove("over"); }));
+drop.addEventListener("drop", e => { if (e.dataTransfer && e.dataTransfer.files.length) addFiles(e.dataTransfer.files); });
+if (!window.pdfjsLib || !window.PDFLib || !window.d3) toast("No cargaron las librerías. Revisa la conexión y recarga.");
+</script>
+</body>
+</html>
